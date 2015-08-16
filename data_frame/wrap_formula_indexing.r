@@ -22,7 +22,12 @@ wrap_formula_indexing = function(FUN) {
             call_args = as.list(match.call())
             call_args = call_args[intersect(names(call_args), names(FUN_formals))]
             call_args$data = data
-            do.call(FUN, call_args)
+            tryCatch(do.call(FUN, call_args), error = function(e) {
+                error("In index: ",
+                    paste(sapply(is_iterated, function(i) args[[i]]), collapse=", "),
+                    "\n", e, immediate.=TRUE)
+                NULL
+            })
         }
 
         func = import('../base/functional')
@@ -43,7 +48,7 @@ wrap_formula_indexing = function(FUN) {
     FUN_formals = formals(FUN)
     if (!"data" %in% names(FUN_formals))
         stop("function needs 'data' argument in order to be wrapped")
-    add_formals = list(group=NULL, subsets=NULL, atomic=NULL, rep=FALSE, hpc_args=NULL)
+    add_formals = list(group=NULL, subsets=NULL, atomic=NULL, rep=FALSE, error=stop, hpc_args=NULL)
     formals(new_FUN) = c(FUN_formals, add_formals)
     new_FUN
 }
