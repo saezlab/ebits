@@ -2,17 +2,8 @@ rzmq = import_package_('rzmq')
 infuser = import_package_('infuser')
 
 #' A template string used to submit jobs
-template = "#BSUB-J {{ job_name }}        # name of the job / array jobs
-#BSUB-g {{ job_group | /rzmq }}           # group the job belongs to
-#BSUB-o {{ log_file | /dev/null }}        # output is sent to logfile, stdout + stderr by default
-#BSUB-P research-rh6                      # Job queue
-#BSUB-W 10080                             # Walltime in minutes
-#BSUB-M {{ memory | 4096 }}               # Memory requirements in Mbytes
-#BSUB-R rusage[mem={{ memory | 4096  }}]  # Memory requirements in Mbytes
-#BSUB-R select[panfs_nobackup_research]
-
-R --no-save --no-restore --args {{ args }} < '{{ rscript }}'
-"
+#template = "bsub -J {{ job_name}} -g {{ job_group || /rzmq }} -o {{ log_file | /dev/null }} -P research-rh6 -W 10080 -M {{ memory | 4096 }} -R \"rusage[mem={{ memory | 4096 }}]\" -R \"select[gpfs]\" R --no-save --no-restore --args {{ args }} < '{{ rscript }}'"
+template = "bsub -J {{ job_name}} Rscript {{ rscript }} {{ args }}"
 
 #' Number submitted jobs consecutively
 job_num = 1
@@ -65,7 +56,7 @@ init = function() {
     assign("master", sprintf("tcp://%s:%i", Sys.info()[['nodename']], exec_socket),
            envir=parent.env(environment()))
 
-#    assign("ssh", pipe("ssh ebi", open="w"), envir=parent.env(environment()))
+    assign("ssh", pipe("ssh ebi", open="w"), envir=parent.env(environment()))
 }
 
 #' Submits one job to the queuing system
@@ -89,14 +80,13 @@ submit_job = function(memory, log_worker=FALSE) {
     assign("job_group", values$job_group, envir=parent.env(environment()))
     assign("job_num", job_num + 1, envir=parent.env(environment()))
 
-    if (log_worker)
-        values$log_file = paste0(values$job_name, ".log")
+#    if (log_worker)
+        values$log_file = paste0("/dev/shm/", values$job_name, ".log")
 
     job_input = infuser$infuse(template, values)
+    print(job_input)
 
-    ssh = pipe("ssh ebi", open="w")
-    cat("bsub\n", job_input, file=ssh)
-    close(ssh)
+    cat(job_input, "\n", file=ssh)
 }
 
 #' Read data from the socket
