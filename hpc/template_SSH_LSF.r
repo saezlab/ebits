@@ -53,7 +53,11 @@ init = function() {
     if (!port_found)
         stop("Could not bind to port range (6000,8000) after 100 tries")
 
-    assign("master", sprintf("tcp://%s:%i", Sys.info()[['nodename']], exec_socket),
+    ip_addr = system("ifconfig", intern=TRUE)
+    ip_addr = ip_addr[grep("inet (172|10)\\.", ip_addr)]
+    ip_addr = stringr::str_match(ip_addr, "([0-9.]+)")[1,1]
+
+    assign("master", sprintf("tcp://%s:%i", ip_addr, exec_socket),
            envir=parent.env(environment()))
 
     assign("ssh", pipe("ssh ebi", open="w"), envir=parent.env(environment()))
