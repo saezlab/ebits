@@ -3,7 +3,7 @@ infuser = import_package_('infuser')
 
 #' A template string used to submit jobs
 #template = "bsub -J {{ job_name}} -g {{ job_group || /rzmq }} -o {{ log_file | /dev/null }} -P research-rh6 -W 10080 -M {{ memory | 4096 }} -R \"rusage[mem={{ memory | 4096 }}]\" -R \"select[gpfs]\" R --no-save --no-restore --args {{ args }} < '{{ rscript }}'"
-template = "bsub -J {{ job_name}} Rscript {{ rscript }} {{ args }}"
+template = "bsub -J {{ job_name}} Rscript -e 'import(\"hpc/worker\")' {{ args }}"
 
 #' Number submitted jobs consecutively
 job_num = 1
