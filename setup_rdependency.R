@@ -6,7 +6,7 @@ if(length(new)) install.packages(new,repos = "http://cran.us.r-project.org")
 
 if(!('ulimit' %in% installed.packages())) devtools::install_github("krlmlr/ulimit")
 if(!('modules' %in% installed.packages())) {
-	devtools::install_github("krlmlr/modules")
+	devtools::install_github('klmr/modules')
 	devtools::install_github('klutometis/roxygen@v5.0.1')
 }
 
