@@ -89,11 +89,11 @@ git checkout ssh+lsf
 
 printf "\n>>> Setting up your .Rprofile:\n"
 if [[ ! -f ~/.Rprofile ]]; then
-	echo ".Rprofile does not exist, we create at: ~./Rprofile"
-	echo "options(import.path = "$ebitsDIR")" >> ~/.Rprofile
+	echo ".Rprofile does not exist, we create at: ~/.Rprofile"
+	echo "options(import.path = \""$ebitsDIR"\")" >> ~/.Rprofile
 else
-	echo ".Rprofile is detected, we added script to ~./Rprofile. Please check for consistency."
-	TODO+=".Rprofile is detected, we added script to ~./Rprofile. Please check for consistency."
+	echo ".Rprofile is detected, we added script to ~/.Rprofile. Please check for consistency."
+	TODO+=".Rprofile is detected, we added script to ~/.Rprofile. Please check for consistency."
 	echo "options(import.path = \""$ebitsDIR"\")" >> ~/.Rprofile
 fi
 

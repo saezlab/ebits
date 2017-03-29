@@ -2,7 +2,7 @@ req1 = c('devtools','BatchJobs','gtools','plyr','dplyr','abind','reshape2','xlsx
 
 # implicit dependencies: stringr, magrittr
 new = req1[!(req1 %in% installed.packages()[,"Package"])]
-if(length(new)) install.packages(new)
+if(length(new)) install.packages(new,repos = "http://cran.us.r-project.org")
 
 if(!('ulimit' %in% installed.packages())) devtools::install_github("krlmlr/ulimit")
 if(!('modules' %in% installed.packages())) {
