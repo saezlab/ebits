@@ -36,6 +36,7 @@ if (grepl("^0\\.[0-8]", packageVersion("modules")))
 #' @param expand_grid     Use all combinations of arguments in `...`
 #' @param seed            A seed to set for each function call
 #' @param memory          The amount of Mb to request from LSF; default: 1 Gb
+#' @param time_req        Required CPU time in mins from the cluster. Jobs are killed after. 
 #' @param n_jobs          The number of LSF jobs to submit
 #' @param job_size        The number of function calls per job; if n_jobs is given,
 #'                        this will have priority
@@ -47,7 +48,7 @@ if (grepl("^0\\.[0-8]", packageVersion("modules")))
 #' @param template        Template file to use; will be "template_<template>.r" in this dir
 #' @return                A list of whatever `fun` returned
 Q = function(fun, ..., const=list(), expand_grid=FALSE, seed=128965,
-        memory=4096, n_jobs=NULL, job_size=NULL, split_array_by=NA,
+        memory=4096, time_req=60, n_jobs=NULL, job_size=NULL, split_array_by=NA,
         fail_on_error=TRUE, log_worker=FALSE, wait_time=NA, template="LSF") {
 
     qsys = import_(paste0('./template_', template))
@@ -74,7 +75,7 @@ Q = function(fun, ..., const=list(), expand_grid=FALSE, seed=128965,
     message("Submitting worker jobs ...")
     pb = txtProgressBar(min=0, max=n_jobs, style=3)
     for (j in 1:n_jobs) {
-        qsys$submit_job(memory=memory, log_worker=log_worker)
+        qsys$submit_job(memory=memory, log_worker=log_worker, time_req=time_req)
         setTxtProgressBar(pb, j)
     }
     close(pb)

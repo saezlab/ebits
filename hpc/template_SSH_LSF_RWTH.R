@@ -3,9 +3,8 @@ infuser = import_package_('infuser')
 
 #' A template string used to submit jobs
 #template = "bsub -J {{ job_name}} -g {{ job_group || /rzmq }} -o {{ log_file | /dev/null }} -P research-rh6 -W 10080 -M {{ memory | 4096 }} -R \"rusage[mem={{ memory | 4096 }}]\" -R \"select[gpfs]\" R --no-save --no-restore --args {{ args }} < '{{ rscript }}'"
-#template = "bsub -J {{ job_name}} -M 4096 -W 00:01 -o ~/{{job_name}}_out.txt -e ~/{{job_name}}_err.txt Rscript -e \"library(modules)\" -e 'import(\"hpc/worker\")' {{ args }}"
-#template = "bsub -J {{ job_name}} -M 4096 -W 00:01 -o ~/{{job_name}}_out.txt -e ~/{{job_name}}_err.txt Rscript -e \"myopt=options()\" -e \"myopt\" -e \"library(modules)\" -e \"import_('hpc/worker')\" {{ args }}"
-template = "bsub -J {{ job_name}} -M 4096 -W 00:01 -o ~/{{job_name}}_out.txt -e ~/{{job_name}}_err.txt Rscript -e \"library(modules)\" -e \"import_('hpc/worker')\" {{ args }}"
+#template = "bsub -J {{ job_name}} -M 4096 -W 00:01 -o ~/{{job_name}}_out.txt -e ~/{{job_name}}_err.txt Rscript -e \"library(modules)\" -e \"import_('hpc/worker')\" {{ args }}"
+template = "bsub -J {{ job_name}} -M {{memory_req}} -W {{time_req}} {{output_file}} {{error_file}} Rscript -e \"library(modules)\" -e \"import_('hpc/worker')\" {{ args }}"
 
 #' Number submitted jobs consecutively
 job_num = 1
@@ -69,17 +68,24 @@ init = function() {
 #'
 #' @param memory      The amount of memory (megabytes) to request
 #' @param log_worker  Create a log file for each worker
-submit_job = function(memory, log_worker=FALSE) {
+#' @param time_req maximum time allowed for the computation in mins
+submit_job = function(memory, log_worker=FALSE,time_req=15) {  #outputFile=NULL,errorFile=NULL
     if (is.null(master))
         stop("Need to call init() first")
 
     group_id = rev(strsplit(master, ":")[[1]])[1]
     job_name = paste0("rzmq", group_id, "-", job_num)
 
+    #if(!is.null(outputFile)) outputFile = paste("-o ",outputFile,sep = "")
+    #if(!is.null(errorFile)) errorFile = paste("-e ",errorFile,sep = "")
     values = list(
         job_name = job_name,
         job_group = paste("/rzmq", group_id, sep="/"),
         rscript = module_file("worker.r"),
+        memory_req = memory,
+        output_file = NULL,
+        error_file = NULL,
+        time_req = time_req,
         args = paste(job_name, master, memory)
     )
 
